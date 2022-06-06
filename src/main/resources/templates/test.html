@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .tdp{
+            background-color: red;
+        }
+    </style>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+</head>
+<body>
+테스트 페이지입니다.
+<script>
+    function getTest() {
+        var temp = sessionStorage.getItem("loginUser");
+        console.log(temp == null);
+    }
+
+    function textOut() {
+        var a = document.getElementById("hidValue").value;
+
+        console.log(a == "");
+    }
+</script>
+<input type="text" id="memberId" name="memberId">
+<input type="text" id="memberPwd" name="memberPwd">
+<input type="button" id="btn" value="클릭" onclick="getTest()">
+<input type="hidden" id="hidValue">
+<input type="button" onclick="textOut()">
+<table id="tempTable" style="border: 1px solid black;"></table>
+</body>
+</html>

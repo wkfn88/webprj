@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="header :: mainHead">
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style type="text/css">
+    .lineUp {
+        border-top: 1px solid #D1D1D1;
+    }
+
+    .lineDown {
+        border-bottom: 1px solid #D1D1D1;
+    }
+
+    .tdp {
+        padding: 5px;
+    }
+</style>
+<body class="def-font">
+<!---------- 헤더 ---------->
+<div th:replace="header :: mainHeader"/>
+<script src="/comment.js"></script>
+<script src="/board.js"></script>
+<!-- 글 제목  -->
+<input type="hidden" th:value="${board.boardNum}" id="boardNum">
+<div class="container" style="margin-top: 50px;">
+    <table style="width: 100%;">
+        <tr class="lineUp">
+            <td style="padding-bottom: 10px; padding-top:5px; font-size: 14pt;" th:text="${board.boardTitle}"></td>
+        </tr>
+        <tr class="lineDown">
+            <td style="padding-bottom: 5px;" th:text="${board.memberId} + ' | ' + ${board.boardDate}">
+            </td>
+            <td style="padding-bottom: 5px; text-align: right;" th:text="'조회수 : ' + ${board.readCount}">
+            </td>
+        </tr>
+    </table>
+
+
+    <!-- 글 본문 -->
+    <div style="text-align: right; margin-top: 10px;">
+        <input type="button" value="목록" class="btn btn-outline-secondary" onclick="location.href='/board/'">
+        <th:block th:if="${board.anonymous == 0}">
+            <input type="button" value="수정" class="btn btn-outline-secondary"  data-bs-toggle="modal" data-bs-target="#staticBackdrop" onclick="setModalBoard('update')">
+            <input type="button" value="삭제" class="btn btn-outline-secondary"  data-bs-toggle="modal" data-bs-target="#staticBackdrop" onclick="setModalBoard('delete')">
+        </th:block>
+        <th:block th:if="${board.anonymous == 1}">
+            <th:block th:if="${board.memberId == session.loginUser }">
+                <input type="button" value="수정" class="btn btn-outline-secondary" th:onclick="|location.href='/board/update?boardNum=${board.boardNum}'|">
+                <input type="button" value="삭제" class="btn btn-outline-secondary" th:onclick="deleteBoard( [[${board.memberId}]] )">
+            </th:block>
+        </th:block>
+    </div>
+    <div th:utext="${board.boardContent}" style="padding-top: 50px; padding-bottom: 50px; font-family: initial;">
+
+    </div>
+    <div style="text-align: center;">
+        <button th:onclick="recommend([[${session.loginUser}]], [[${board.boardNum}]])" class="btn btn-secondary" style="font-size: 16pt;">
+            <i class="bi bi-hand-thumbs-up"></i><sapn id="recoCount" th:text="' 추천 : ' + ${board.recoCount}"></sapn>
+        </button>
+    </div>
+
+
+    <!-- 댓글 조회 부분  -->
+    <table style="width: 100%; margin-top: 20px;" id="comTable">
+            <tr th:if="${comList == null}" class="lineUp lineDown" style="background-color: #F9F9F9;">
+                <td class="tdp" style="width: 100%; text-align: center;">작성된 댓글이 없습니다.</td>
+            </tr>
+        <th:block th:if="${comList != null}">
+                <tr th:each="comment : ${comList}" class="lineUp lineDown" style="background-color: #F9F9F9;">
+                    <td th:text="${comment.memberId}" class="tdp" style="width: 20%; text-align: left"></td>
+                    <td th:text="${comment.commentContent}" class="tdp" style="width: 58%; text-align: left"></td>
+                    <td th:if="${comment.anonymous == 0}" class="tdp" style="width: 22%; text-align: right;">
+                        <span th:text="${comment.commentDate} + ' | '"></span>
+                        <a href="#" class="a" data-bs-toggle="modal" data-bs-target="#staticBackdrop" th:onclick="setModalComment([[${comment.commentNum}]], 'comment')">삭제</a>
+                    </td>
+                    <th:block th:if="${comment.anonymous == 1}">
+                        <td th:if="${comment.memberId == session.loginUser}" class="tdp" style="width: 22%; text-align: right;">
+                            <span th:text="${comment.commentDate} + ' | '"></span>
+                            <a href="#" class="a" th:onclick="deleteComment([[${comment.commentNum}]])">삭제</a>
+                        </td>
+                        <td th:if="${comment.memberId != session.loginUser}" class="tdp" style="width: 22%; text-align: right;" th:text="${comment.commentDate}"></td>
+                    </th:block>
+                </tr>
+        </th:block>
+    </table>
+
+    <!-- 댓글 작성 부분  -->
+    <form action="/board/comment" method="post" name="comFrm">
+        <input th:if="${session.loginUser == null }" type="hidden" name="anonymous" id="anonymous" value="0">
+        <input th:if="${session.loginUser != null }" type="hidden" name="anonymous" id="anonymous" value="1">
+        <input type="hidden" name="boardNum" th:value="${board.boardNum}">
+            <table th:if="${session.loginUser == null }" style="border: 1px solid #D1D1D1; width: 100%; margin-top: 30px;">
+                <tr>
+                    <td class="tdp" style="width: 15%;">
+                        <input type="text" name="memberId" id="commentId" class="form-control" placeholder="작성자">
+                    </td>
+                    <td class="tdp" style="width: 85%;" rowspan="3">
+                        <textarea class="form-control" style="width: 100%;" rows="5" name="commentContent" id="commentContent"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="tdp" style="width: 15%;">
+                        <input type="password" name="commentPwd" id="commentPwd" class="form-control" placeholder="비밀번호">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="tdp" style="width: 15%;">
+                        <input type="submit" onclick="return emptyCheck()" value="댓글등록" class="btn btn-secondary" style="width: 100%;">
+                    </td>
+                </tr>
+            </table>
+            <table th:if="${session.loginUser != null}" style="border: 1px solid #D1D1D1; width: 100%; margin-top: 30px;">
+                <tr>
+                    <td class="tdp" style="width: 15%;">
+                        <input type="text" name="memberId" id="commentId" class="form-control" th:value="${session.loginUser}" readonly="readonly">
+                    </td>
+                    <td class="tdp" style="width: 85%;" rowspan="2">
+                        <textarea class="form-control" style="width: 100%;" rows="3" name="commentContent" id="commentContent"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="tdp" style="width: 15%;">
+                        <input type="submit" onclick="return emptyCheck2()" value="댓글등록" class="btn btn-secondary" style="width: 100%;">
+                    </td>
+                </tr>
+            </table>
+    </form>
+
+
+    <!-- 모달 -->
+    <form action="/board/modal" method="post" name="deleteFrm">
+        <input type="hidden" name="boardNum" th:value="${board.boardNum}">
+        <input type="hidden" name="modalType">
+        <input type="hidden" name="commentNum">
+        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">비밀번호 확인</h5>
+                    </div>
+                    <div class="modal-body">
+                        <input type="password" class="form-control" placeholder="비밀번호를 입력해주세요" name="pwd">
+                    </div>
+                    <div class="modal-footer">
+                        <input type="button" class="btn btn-secondary" style="width: 100px;" value="확인" onclick="modal()"></input>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="width: 100px;">취소</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>

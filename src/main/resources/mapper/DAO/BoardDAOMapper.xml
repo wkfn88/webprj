@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.webBoard.webBoard.repository.BoardDAO">
+
+    <select id="getLastNum" resultType="java.lang.Integer">
+        select boardnum from board b order by boardnum desc limit 1
+    </select>
+
+    <update id="updateReadCount">
+        update board set readcount = readcount + 1 where boardnum = #{boardNum}
+    </update>
+
+    <select id="getCount" resultType="java.lang.Integer">
+        select count(*) from boardview
+        where status = 1 and ${type} like '%${searchWord}%'
+    </select>
+
+    <select id="getList" resultType="com.webBoard.webBoard.vo.BoardVO">
+        select * from boardview b
+        where b.${type} like '%${searchWord}%' and b.status = #{status}
+        order by b.boardnum desc limit #{pageNum}, 11
+    </select>
+
+    <select id="getRecentList" resultType="com.webBoard.webBoard.vo.BoardVO">
+        select * FROM boardview where status = 1
+        order by boardnum desc limit 0, 5
+    </select>
+
+    <select id="getRecommendList" resultType="com.webBoard.webBoard.vo.BoardVO">
+        select * from boardview b where date(b.boarddate) = DATE(now())
+        and status = 1 order by b.recocount desc limit 0, 5
+    </select>
+
+    <select id="getBoard" resultType="com.webBoard.webBoard.vo.BoardVO">
+        select * from boardview b where b.boardnum = #{boardNum}
+    </select>
+
+    <insert id="insert" parameterType="com.webBoard.webBoard.vo.BoardVO">
+        insert into board values(#{boardNum}, #{boardTitle}, #{memberId}, #{boardPwd}, #{boardContent}, #{anonymous}, #{status}, default, default)
+    </insert>
+
+    <update id="delete">
+        update board set status = 0 where boardnum = #{boardNum}
+    </update>
+
+    <update id="update" parameterType="com.webBoard.webBoard.vo.BoardVO">
+        update board set boardtitle = #{boardTitle}, boardcontent = #{boardContent} where boardnum = #{boardNum}
+    </update>
+
+</mapper>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="header :: mainHead">
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body class="def-font">
+<!---------- 헤더 ---------->
+<div th:replace="header :: mainHeader"/>
+<th:block th:if="${result == 'registFail'}">
+    <script>
+        alert('중복된 아이디가 있습니다.');
+        history.back();
+    </script>
+</th:block>
+<th:block th:if="${result == 'registSuccess'}">
+    <script>
+        alert('회원가입에 성공했습니다.');
+        location.href="/";
+    </script>
+</th:block>
+<th:block th:if="${result == 'loginFail'}">
+    <script>
+        alert('일치하는 계정이 없습니다.');
+        history.back();
+    </script>
+</th:block>
+</body>
+</html>
